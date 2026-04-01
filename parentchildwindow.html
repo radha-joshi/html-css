@@ -1,0 +1,71 @@
+<html>
+<head>
+  <title>Parent Window</title>
+</head>
+<body style="text-align:center; margin-top:58px; font-family:Arial;">
+
+<h1>Parent Window</h1>
+
+<input id="parentmsg" placeholder="Message to child">
+<br><br>
+
+<button onclick="openChild()">Open Child</button>
+<button onclick="sendToChild()">Send to Child</button>
+
+<p><b>Message from Child:</b></p>
+<p id="fromChild">None</p>
+
+<script>
+let childwin;
+
+function openChild() {
+  if (!childwin || childwin.closed) {
+    childwin = window.open("", "ChildWindow", "width=400, height=300, left=400, top=200");
+    
+    childwin.document.open();
+    childwin.document.write(`
+      <!DOCTYPE html>
+      <html>
+      <head><title>Child</title></head>
+      <body style="text-align:center; font-family:Arial; margin-top:40px;">
+        <h2>Child Window</h2>
+        <input id="childMsg" placeholder="Message to parent">
+        <br><br>
+        <button onclick="sendToParent()">Send to Parent</button>
+        <p><b>Message from Parent:</b></p>
+        <p id="fromParent">None</p>
+        <script>
+          window.addEventListener("message", (event) => {
+            document.getElementById("fromParent").textContent = event.data;
+          });
+          function sendToParent() {
+            const msg = document.getElementById("childMsg").value;
+            window.opener.postMessage(msg, "*");
+          }
+        <\/script>
+      </body>
+      </html>
+    `);
+    childwin.document.close();
+  } else {
+    childwin.focus();
+  }
+}
+
+function sendToChild() {
+  const msg = document.getElementById("parentmsg").value;
+  if (childwin && !childwin.closed) {
+    childwin.postMessage(msg, "*");
+  } else {
+    alert("Open child window first");
+  }
+}
+
+// Receive from child
+window.addEventListener("message", (event) => {
+  document.getElementById("fromChild").textContent = event.data;
+});
+</script>
+</body>
+</html>
+
